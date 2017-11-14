@@ -90,14 +90,10 @@ class Folk_RNN:
     
     def compose_tune(self):
         """
-        Composes tune and returns it as abc notation
+        Composes tune and returns it as a list of abc tokens
         """
         tune = list(self.tune)
         while tune[-1] != self.end_idx:
             next_itoken = self.rng.choice(self.vocab_idxs, p=self.predict(np.array([tune], dtype='int32')))
             tune.append(next_itoken)
-        return '{}\n{}\n{}\n'.format(
-            self.idx2token[tune[1]],
-            self.idx2token[tune[2]],
-            ' '.join(self.idx2token[x] for x in tune[3:-1]),
-            )
+        return [self.idx2token[x] for x in tune[1:-1]]

@@ -57,7 +57,8 @@ folk_rnn = Folk_RNN(
     )
 folk_rnn.seed_tune(seed)
 for i in xrange(ntunes):
-    tune = 'X:{}\n{}\n'.format(i, folk_rnn.compose_tune())
+    tune_tokens = folk_rnn.compose_tune()
+    tune = 'X:{}\n{}\n{}\n{}\n'.format(i, tune_tokens[0], tune_tokens[1], ' '.join(tune_tokens[2:]))
     if args.terminal:
         print(tune)
     else:
