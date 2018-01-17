@@ -35,37 +35,22 @@ class Folk_RNN:
         self.vocab_idxs = np.arange(vocab_size)
         self.start_idx, self.end_idx = self.token2idx['<s>'], self.token2idx['</s>']
         self.rng = np.random.RandomState(random_number_generator_seed)
-               
-        self.LSTM_Wxi=[]
-        self.LSTM_Wxf=[]
-        self.LSTM_Wxc=[]
-        self.LSTM_Wxo=[]
-        self.LSTM_Whi=[]
-        self.LSTM_Whf=[]
-        self.LSTM_Whc=[]
-        self.LSTM_Who=[]
-        self.LSTM_bi=[]
-        self.LSTM_bf=[]
-        self.LSTM_bc=[]
-        self.LSTM_bo=[]
-        self.LSTM_cell_init=[]
-        self.LSTM_hid_init=[]
         
-        for jj in range(self.num_layers):
-            self.LSTM_Wxi.append(param_values[2+jj*14-1])
-            self.LSTM_Whi.append(param_values[3+jj*14-1])
-            self.LSTM_bi.append(param_values[4+jj*14-1])
-            self.LSTM_Wxf.append(param_values[5+jj*14-1])
-            self.LSTM_Whf.append(param_values[6+jj*14-1])
-            self.LSTM_bf.append(param_values[7+jj*14-1])
-            self.LSTM_Wxc.append(param_values[8+jj*14-1])
-            self.LSTM_Whc.append(param_values[9+jj*14-1])
-            self.LSTM_bc.append(param_values[10+jj*14-1])
-            self.LSTM_Wxo.append(param_values[11+jj*14-1])
-            self.LSTM_Who.append(param_values[12+jj*14-1])
-            self.LSTM_bo.append(param_values[13+jj*14-1])
-            self.LSTM_cell_init.append(param_values[14+jj*14-1])
-            self.LSTM_hid_init.append(param_values[15+jj*14-1])
+        layer_indexes = range(self.num_layers)
+        self.LSTM_Wxi = [param_values[2+jj*14-1] for jj in layer_indexes]
+        self.LSTM_Whi = [param_values[3+jj*14-1] for jj in layer_indexes]
+        self.LSTM_bi =  [param_values[4+jj*14-1] for jj in layer_indexes]
+        self.LSTM_Wxf =[param_values[5+jj*14-1] for jj in layer_indexes]
+        self.LSTM_Whf = [param_values[6+jj*14-1] for jj in layer_indexes]
+        self.LSTM_bf = [param_values[7+jj*14-1] for jj in layer_indexes]
+        self.LSTM_Wxc = [param_values[8+jj*14-1] for jj in layer_indexes]
+        self.LSTM_Whc = [param_values[9+jj*14-1] for jj in layer_indexes]
+        self.LSTM_bc = [param_values[10+jj*14-1] for jj in layer_indexes]
+        self.LSTM_Wxo = [param_values[11+jj*14-1] for jj in layer_indexes]
+        self.LSTM_Who = [param_values[12+jj*14-1] for jj in layer_indexes]
+        self.LSTM_bo = [param_values[13+jj*14-1] for jj in layer_indexes]
+        self.LSTM_cell_init = [param_values[14+jj*14-1] for jj in layer_indexes]
+        self.LSTM_hid_init = [param_values[15+jj*14-1] for jj in layer_indexes]
         
         self.FC_output_W = param_values[43];
         self.FC_output_b = param_values[44];
