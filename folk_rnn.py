@@ -19,8 +19,6 @@ class Folk_RNN:
     Folk music style modelling using LSTMs
     """
     
-    debug = False
-    
     def __init__(self, 
                  token2idx, 
                  param_values,
@@ -37,10 +35,7 @@ class Folk_RNN:
         self.vocab_idxs = np.arange(vocab_size)
         self.start_idx, self.end_idx = self.token2idx['<s>'], self.token2idx['</s>']
         self.rng = np.random.RandomState(random_number_generator_seed)
-       
-        if self.debug:
-            print('Building the model')
-        
+               
         self.LSTM_Wxi=[]
         self.LSTM_Wxf=[]
         self.LSTM_Wxc=[]
