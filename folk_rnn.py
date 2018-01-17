@@ -19,22 +19,13 @@ class Folk_RNN:
     Folk music style modelling using LSTMs
     """
     
-    def __init__(self, 
-                 token2idx, 
-                 param_values,
-                 num_layers=3,
-                 random_number_generator_seed=42, 
-                 temperature=1.0
-                 ):
+    def __init__(self, token2idx, param_values, num_layers=3):
         vocab_size = len(token2idx)
-        
         self.num_layers = num_layers
         self.token2idx = token2idx
-        self.temperature = temperature
         self.idx2token = dict((v, k) for k, v in self.token2idx.items())
         self.vocab_idxs = np.arange(vocab_size)
         self.start_idx, self.end_idx = self.token2idx['<s>'], self.token2idx['</s>']
-        self.rng = np.random.RandomState(random_number_generator_seed)
         
         layer_indexes = range(self.num_layers)
         self.LSTM_Wxi = [param_values[2+jj*14-1] for jj in layer_indexes]
@@ -86,13 +77,14 @@ class Folk_RNN:
             self.LSTM_cell_init_seed = ctm1
             self.LSTM_hid_init_seed = htm1
     
-    def compose_tune(self):
+    def compose_tune(self, random_number_generator_seed=42, temperature=1.0):
         """
         Composes tune and returns it as a list of abc tokens
         """
         tune = list(self.tune)
         htm1 = list(self.LSTM_hid_init_seed)
         ctm1 = list(self.LSTM_cell_init_seed)
+        rng = np.random.RandomState(random_number_generator_seed)
         while tune[-1] != self.end_idx:
             x = np.zeros(self.sizeofx, dtype=np.int8)
             x[tune[-1]] = 1;
@@ -105,7 +97,7 @@ class Folk_RNN:
                x=ht
                ctm1[jj]=ct
                htm1[jj]=ht
-            output = softmax(np.dot(x,self.FC_output_W) + self.FC_output_b,self.temperature)
-            next_itoken = self.rng.choice(self.vocab_idxs, p=output.squeeze())
+            output = softmax(np.dot(x,self.FC_output_W) + self.FC_output_b, temperature)
+            next_itoken = rng.choice(self.vocab_idxs, p=output.squeeze())
             tune.append(next_itoken)
         return [self.idx2token[x] for x in tune[1:-1]]

@@ -48,12 +48,10 @@ folk_rnn = Folk_RNN(
     metadata['token2idx'],
     metadata['param_values'], 
     config.num_layers, 
-    rng_seed, 
-    temperature
     )
 folk_rnn.seed_tune(seed)
 for i in range(ntunes):
-    tune_tokens = folk_rnn.compose_tune()
+    tune_tokens = folk_rnn.compose_tune(random_number_generator_seed=rng_seed, temperature=temperature)
     tune = 'X:{}\n{}\n{}\n{}\n'.format(i, tune_tokens[0], tune_tokens[1], ' '.join(tune_tokens[2:]))
     if args.terminal:
         print(tune)
