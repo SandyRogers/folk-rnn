@@ -77,7 +77,7 @@ class Folk_RNN:
             self.LSTM_cell_init_seed = ctm1
             self.LSTM_hid_init_seed = htm1
     
-    def compose_tune(self, random_number_generator_seed=42, temperature=1.0):
+    def generate_tune(self, random_number_generator_seed=42, temperature=1.0):
         """
         Composes tune and returns it as a list of abc tokens
         """
