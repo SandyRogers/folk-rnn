@@ -10,7 +10,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.9.0',
+    version='1.0.0',
 
     description='Folk music style modelling using LSTMs',
     long_description='Long version to be converted from README markdown to ReStructuredText if this ever is uploaded to PyPi. https://stackoverflow.com/a/26737672',
@@ -41,7 +41,8 @@ setup(
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 2.7', # training and generating
+        'Programming Language :: Python :: 3', # generating only
     ],
 
     # What does your project relate to?
@@ -59,16 +60,15 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=[
-        'theano<0.8',
-        'lasagne',
-        ],
+    install_requires=['numpy'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
     # for example:
     # $ pip install -e .[dev,test]
-    extras_require={},
+    extras_require={
+        'train': ['theano<0.8', 'lasagne']
+        },
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these

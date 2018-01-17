@@ -30,8 +30,11 @@ seed = args.seed
 
 print('seed', seed)
 
-with open(metadata_path) as f:
-    metadata = pickle.load(f)
+with open(metadata_path, 'rb') as f:
+    if sys.version_info < (3,0): 
+        metadata = pickle.load(f)
+    else:
+        metadata = pickle.load(f, encoding='latin1')
 
 config = importlib.import_module('configurations.%s' % metadata['configuration'])
 
@@ -41,22 +44,15 @@ if not os.path.isdir('samples'):
 target_path = "samples/%s-s%d-%.2f-%s.txt" % (
     metadata['experiment_id'], rng_seed, temperature, time.strftime("%Y%m%d-%H%M%S", time.localtime()))
 
-if config.one_hot:
-    config.embedding_size = None
-
 folk_rnn = Folk_RNN(
     metadata['token2idx'],
     metadata['param_values'], 
     config.num_layers, 
-    config.rnn_size,
-    config.grad_clipping,
-    config.dropout, 
-    config.embedding_size, 
     rng_seed, 
     temperature
     )
 folk_rnn.seed_tune(seed)
-for i in xrange(ntunes):
+for i in range(ntunes):
     tune_tokens = folk_rnn.compose_tune()
     tune = 'X:{}\n{}\n{}\n{}\n'.format(i, tune_tokens[0], tune_tokens[1], ' '.join(tune_tokens[2:]))
     if args.terminal:
