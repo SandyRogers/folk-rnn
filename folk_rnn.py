@@ -77,7 +77,7 @@ class Folk_RNN:
             self.LSTM_cell_init_seed = ctm1
             self.LSTM_hid_init_seed = htm1
     
-    def generate_tune(self, random_number_generator_seed=42, temperature=1.0):
+    def generate_tune(self, random_number_generator_seed=42, temperature=1.0, on_token_callback=None):
         """
         Composes tune and returns it as a list of abc tokens
         """
@@ -85,7 +85,12 @@ class Folk_RNN:
         htm1 = list(self.LSTM_hid_init_seed)
         ctm1 = list(self.LSTM_cell_init_seed)
         rng = np.random.RandomState(random_number_generator_seed)
+        if on_token_callback:
+            for x in tune[1:-1]:
+                on_token_callback(self.idx2token[x])
         while tune[-1] != self.end_idx:
+            if on_token_callback:
+                on_token_callback(self.idx2token[tune[-1]])
             x = np.zeros(self.sizeofx, dtype=np.int8)
             x[tune[-1]] = 1;
             for jj in range(self.num_layers):
