@@ -86,11 +86,9 @@ class Folk_RNN:
         ctm1 = list(self.LSTM_cell_init_seed)
         rng = np.random.RandomState(random_number_generator_seed)
         if on_token_callback:
-            for x in tune[1:-1]:
+            for x in tune[1:]:
                 on_token_callback(self.idx2token[x])
         while tune[-1] != self.end_idx:
-            if on_token_callback:
-                on_token_callback(self.idx2token[tune[-1]])
             x = np.zeros(self.sizeofx, dtype=np.int8)
             x[tune[-1]] = 1;
             for jj in range(self.num_layers):
@@ -105,4 +103,6 @@ class Folk_RNN:
             output = softmax(np.dot(x,self.FC_output_W) + self.FC_output_b, temperature)
             next_itoken = rng.choice(self.vocab_idxs, p=output.squeeze())
             tune.append(next_itoken)
+            if on_token_callback and next_itoken != self.end_idx:
+                on_token_callback(self.idx2token[next_itoken])
         return [self.idx2token[x] for x in tune[1:-1]]
