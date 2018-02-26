@@ -10,7 +10,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='2.1.0',
+    version='2.1.1',
 
     description='Folk music style modelling using LSTMs',
     long_description='Long version to be converted from README markdown to ReStructuredText if this ever is uploaded to PyPi. https://stackoverflow.com/a/26737672',
