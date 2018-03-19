@@ -1,5 +1,7 @@
 import numpy as np
 
+TUNE_MAX_LENGTH = 1000
+
 def sigmoid(x): 
     return 1/(1 + np.exp(-x))
 
@@ -19,13 +21,16 @@ class Folk_RNN:
     Folk music style modelling using LSTMs
     """
     
-    def __init__(self, token2idx, param_values, num_layers=3):
+    def __init__(self, token2idx, param_values, num_layers=3, wildcard_token=None):
         vocab_size = len(token2idx)
         self.num_layers = num_layers
         self.token2idx = token2idx
+        if wildcard_token is not None:
+            self.token2idx[wildcard_token] = vocab_size
         self.idx2token = dict((v, k) for k, v in self.token2idx.items())
         self.vocab_idxs = np.arange(vocab_size)
         self.start_idx, self.end_idx = self.token2idx['<s>'], self.token2idx['</s>']
+        self.wildcard_idx = self.token2idx[wildcard_token]
         
         layer_indexes = range(self.num_layers)
         self.LSTM_Wxi = [param_values[2+jj*14-1] for jj in layer_indexes]
@@ -52,45 +57,27 @@ class Folk_RNN:
     
     def seed_tune(self, seed_tune_abc=None):
         """
-        Sets the seed of the tune
+        Sets the seed of the tune. Accepts either an iterable of tokens, or string of tokens separated by tokens.
         """
         self.tune = [self.start_idx]
-        if seed_tune_abc is None:
-            self.LSTM_cell_init_seed = list(self.LSTM_cell_init)
-            self.LSTM_hid_init_seed = list(self.LSTM_hid_init)
-        else:
+        if isinstance(seed_tune_abc, str):
             self.tune += [self.token2idx[x] for x in seed_tune_abc.split(' ')]
-            htm1 = list(self.LSTM_hid_init)
-            ctm1 = list(self.LSTM_cell_init)
-            for tok in self.tune[:-1]:
-               x = np.zeros(self.sizeofx, dtype=np.int8)
-               x[tok] = 1;
-               for jj in range(self.num_layers):
-                   it=sigmoid(np.dot(x,self.LSTM_Wxi[jj]) + np.dot(htm1[jj], self.LSTM_Whi[jj]) + self.LSTM_bi[jj])
-                   ft=sigmoid(np.dot(x,self.LSTM_Wxf[jj]) + np.dot(htm1[jj], self.LSTM_Whf[jj]) + self.LSTM_bf[jj])
-                   ct=np.multiply(ft,ctm1[jj]) + np.multiply(it,np.tanh(np.dot(x,self.LSTM_Wxc[jj]) + np.dot(htm1[jj],self.LSTM_Whc[jj]) + self.LSTM_bc[jj]))
-                   ot=sigmoid(np.dot(x,self.LSTM_Wxo[jj]) + np.dot(htm1[jj],self.LSTM_Who[jj]) + self.LSTM_bo[jj])
-                   ht=np.multiply(ot,np.tanh(ct))
-                   x=ht
-                   ctm1[jj]=ct
-                   htm1[jj]=ht
-            self.LSTM_cell_init_seed = ctm1
-            self.LSTM_hid_init_seed = htm1
+        elif seed_tune_abc:
+            self.tune += [self.token2idx[x] for x in seed_tune_abc]
     
     def generate_tune(self, random_number_generator_seed=42, temperature=1.0, on_token_callback=None):
         """
-        Composes tune and returns it as a list of abc tokens
+        Generates tune and returns it as a list of abc tokens
         """
         tune = list(self.tune)
-        htm1 = list(self.LSTM_hid_init_seed)
-        ctm1 = list(self.LSTM_cell_init_seed)
+        htm1 = list(self.LSTM_hid_init)
+        ctm1 = list(self.LSTM_cell_init)
         rng = np.random.RandomState(random_number_generator_seed)
-        if on_token_callback:
-            for x in tune[1:]:
-                on_token_callback(self.idx2token[x])
-        while tune[-1] != self.end_idx:
+        token_count = 0
+        seed_count = len(self.tune)
+        while tune[-1] != self.end_idx and token_count < TUNE_MAX_LENGTH:
             x = np.zeros(self.sizeofx, dtype=np.int8)
-            x[tune[-1]] = 1;
+            x[tune[token_count]] = 1;
             for jj in range(self.num_layers):
                it=sigmoid(np.dot(x,self.LSTM_Wxi[jj]) + np.dot(htm1[jj], self.LSTM_Whi[jj]) + self.LSTM_bi[jj])
                ft=sigmoid(np.dot(x,self.LSTM_Wxf[jj]) + np.dot(htm1[jj], self.LSTM_Whf[jj]) + self.LSTM_bf[jj])
@@ -100,9 +87,17 @@ class Folk_RNN:
                x=ht
                ctm1[jj]=ct
                htm1[jj]=ht
-            output = softmax(np.dot(x,self.FC_output_W) + self.FC_output_b, temperature)
-            next_itoken = rng.choice(self.vocab_idxs, p=output.squeeze())
-            tune.append(next_itoken)
+            output = softmax(np.dot(x,self.FC_output_W) + self.FC_output_b, temperature).squeeze()
+
+            next_itoken = rng.choice(self.vocab_idxs, p=output)
+            
+            token_count += 1
+            if token_count >= seed_count:
+                tune.append(next_itoken)
+            elif tune[token_count] == self.wildcard_idx:
+                tune[token_count] = next_itoken
+                
             if on_token_callback and next_itoken != self.end_idx:
-                on_token_callback(self.idx2token[next_itoken])
+                on_token_callback(self.idx2token[tune[token_count]])
+            
         return [self.idx2token[x] for x in tune[1:-1]]
