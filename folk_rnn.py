@@ -90,6 +90,7 @@ class Folk_RNN:
             output = softmax(np.dot(x,self.FC_output_W) + self.FC_output_b, temperature).squeeze()
 
             next_itoken = rng.choice(self.vocab_idxs, p=output)
+            next_itoken_alternatives = sorted(zip(self.vocab_idxs, output), key=lambda x: x[1], reverse=True)
             
             token_count += 1
             if token_count >= seed_count:
@@ -98,6 +99,6 @@ class Folk_RNN:
                 tune[token_count] = next_itoken
                 
             if on_token_callback and next_itoken != self.end_idx:
-                on_token_callback(self.idx2token[tune[token_count]])
+                on_token_callback(self.idx2token[tune[token_count]], ((self.idx2token[i], p) for i,p in next_itoken_alternatives))
             
         return [self.idx2token[x] for x in tune[1:-1]]
