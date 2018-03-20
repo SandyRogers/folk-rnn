@@ -1,4 +1,5 @@
 import numpy as np
+from inspect import signature
 
 TUNE_MAX_LENGTH = 1000
 
@@ -69,6 +70,7 @@ class Folk_RNN:
         """
         Generates tune and returns it as a list of abc tokens
         """
+        callback_type = len(signature(on_token_callback).parameters) if on_token_callback else 0
         tune = list(self.tune)
         htm1 = list(self.LSTM_hid_init)
         ctm1 = list(self.LSTM_cell_init)
@@ -97,8 +99,10 @@ class Folk_RNN:
                 tune.append(next_itoken)
             elif tune[token_count] == self.wildcard_idx:
                 tune[token_count] = next_itoken
-                
-            if on_token_callback and next_itoken != self.end_idx:
+            
+            if callback_type == 1 and next_itoken != self.end_idx:
+                on_token_callback(self.idx2token[tune[token_count]])    
+            elif callback_type == 2 and next_itoken != self.end_idx:
                 on_token_callback(self.idx2token[tune[token_count]], ((self.idx2token[i], p) for i,p in next_itoken_alternatives))
             
         return [self.idx2token[x] for x in tune[1:-1]]
